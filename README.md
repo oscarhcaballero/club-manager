@@ -10,7 +10,7 @@ Sigue estos pasos para instalar y configurar el proyecto:
 
 **Clona el repositorio**
 
-    git clone https://github.com/tu-usuario/club-manager.git
+    git clone https://github.com/oscarhcaballero/club-manager.git
     cd club-manager
 
 
