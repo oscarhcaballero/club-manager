@@ -22,3 +22,20 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+
+    # controllers are imported separately to make sure services can be injected
+    # as action arguments even if you don't extend any base controller class
+    App\Controller\:
+        resource: '../src/Controller'
+        tags: ['controller.service_arguments']
+
+    # Registro de la interfaz y su implementación
+    App\Service\NotificadorInterface:
+        alias: App\Service\EmailNotificador
+        public: true
+
+    App\Service\EmailNotificador:
+        arguments:
+            $mailer: '@mailer' # Symfony Mailer es inyectado aquí
+
