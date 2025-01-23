@@ -3,22 +3,40 @@
 namespace App\Controller;
 
 use App\Entity\Jugador;
-use App\Entity\Entrenador;
-use App\Entity\Club;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-
+use App\Service\Observador\SubjectInterface;
+use App\Service\Notificador\NotificadorEmail;
  
+
 class JugadorController extends AbstractController
 {
+    private $subject; 
+
+    /**
+     * Constructor
+     *
+     * @param SubjectInterface $subject El sujeto que maneja la lista de observadores
+     * @param NotificadorEmail $notificadorEmail El observador concreto que se agregará a la lista de observadores que maneja el sujeto
+     */
+    public function __construct(SubjectInterface $subject, NotificadorEmail $notificadorEmail)
+    {
+        $this->subject = $subject;
+        $this->subject->agregarObservador($notificadorEmail);
+        //$this->subject->agregarObservador($notificadorSMS);
+        //$this->subject->agregarObservador($notificadorWhatsapp);
+    }
+
+
     #[Route('/api/jugador', methods: ['POST'])]
     public function createJugador(Request $request, EntityManagerInterface $em): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
         $nombre = $data['nombre'] ?? null;
+        $email = $data['email'] ?? null;
          
 
         if (!$nombre) {
@@ -27,6 +45,7 @@ class JugadorController extends AbstractController
 
         $jugador = new Jugador();
         $jugador->setNombre($nombre);
+        $jugador->setEmail($email);
 
 
         $em->persist($jugador);
@@ -36,77 +55,7 @@ class JugadorController extends AbstractController
     }
 
 
-    #[Route('/api/club/{id}/jugador', methods: ['POST'])]
-    public function addJugadorToClub(int $id, Request $request, EntityManagerInterface $em): JsonResponse
-    {
-        $club = $em->getRepository(Club::class)->find($id);
-        if (!$club) {
-            return new JsonResponse(['error' => 'Club no encontrado'], 404);
-        }
-
-
-        $data = json_decode($request->getContent(), true);
-        $id_jugador = $data['id_jugador'] ?? null;
-        $salario = $data['salario'] ?? null;
-
-
-        if (!$id_jugador || !$salario) {
-            return new JsonResponse(['error' => 'Faltan datos obligatorios'], 400);
-        }
-
-        if (!is_numeric($id_jugador) || !is_numeric($salario)) {
-            return new JsonResponse(['error' => 'Datos inválidos'], 400);
-        }
-
-        if ($salario < 0) {
-            return new JsonResponse(['error' => 'El salario debe ser positivo.'], 400);
-        }
-
-        // el jugador debe existir previamente
-        $jugador = $em->getRepository(Jugador::class)->find($id_jugador);
-        if (!$jugador) {
-            return new JsonResponse(['error' => 'Jugador no encontrado'], 404);
-        }
-
-        
-        // el jugador no puede estar ya en un club
-        if ($jugador->getClub()) {
-            if ($id == $jugador->getClub()->getId()) {
-                return new JsonResponse(['error' => 'El jugador ya pertenece a este Club'], 400);
-            } else {
-                return new JsonResponse(['error' => 'El jugador ya pertenece a otro Club'], 400);
-            }
-        }
-
-
-        // Comprobamos que el salario no sobrepase el presupuesto del Club
-        $salarioTotalActual = 0;
-        foreach ($club->getJugadores() as $player) {
-            $salarioTotalActual += $player->getSalario();
-        }
-        
-        foreach ($club->getEntrenadores() as $coach) {
-            $salarioTotalActual += $coach->getSalario();
-        }
-
-        if ($salarioTotalActual + $salario > $club->getPresupuesto()) {
-            return new JsonResponse(['error' => 'El presupuesto del Club no permite pagar ese salario.'], 400);
-        }
-
-
-        $jugador->setSalario((float)$salario);
-        $jugador->setClub($club);
-
-        $em->persist($jugador);
-        $em->flush();
-
-        return new JsonResponse(['message' => '¡Jugador agregado al Club!'], 201);
-    }
-
-
-
     
-
     #[Route('/api/jugador/{id}/baja', methods: ['DELETE'])]
     public function removeJugadorFromClub(int $id, EntityManagerInterface $em): JsonResponse
     {
@@ -118,13 +67,27 @@ class JugadorController extends AbstractController
         // recuperamos el club al que pertenece el jugador
         $club = $jugador->getClub();
         if ($club) {
+
             $club->getJugadores()->removeElement($jugador);
             $jugador->setClub(null);
             $jugador->setSalario(null);
 
             $em->flush();
 
-            return new JsonResponse(['message' => 'Jugador dado de baja del club'], 200);
+            // notificación
+            $mensaje = 'Jugador dado de baja del club';
+            try {
+                $this->subject->notificar($mensaje, $jugador);
+                return new JsonResponse([
+                    'message' => $mensaje. ', y notificación enviada.'
+                ], 200);
+            } catch (\InvalidArgumentException $e) {
+                return new JsonResponse([
+                    'message' => $mensaje. ', pero hubo un problema al enviar la notificación.',
+                    'error' => $e->getMessage()
+                ], 201);
+            }
+            
         } else {
             return new JsonResponse(['error' => 'El Jugador no pertenece a ningún Club'], 400);
         }

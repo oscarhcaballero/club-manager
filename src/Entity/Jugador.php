@@ -19,6 +19,9 @@ class Jugador
     #[ORM\Column(type: 'float', nullable: true)]
     private $salario;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private $email;
+
     #[ORM\ManyToOne(targetEntity: Club::class, inversedBy: 'jugadores')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private $club;
@@ -54,6 +57,17 @@ class Jugador
         return $this;
     }
 
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(?string $email): self
+    {
+        $this->email = $email;
+
+        return $this;
+    }
     public function getClub(): ?Club
     {
         return $this->club;

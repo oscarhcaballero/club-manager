@@ -30,12 +30,25 @@ services:
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
 
-    # Registro de la interfaz y su implementación
-    App\Service\NotificadorInterface:
-        alias: App\Service\EmailNotificador
-        public: true
-
-    App\Service\EmailNotificador:
+    # Registro de la interfaz y su implementación para NotificadorEmail
+    App\Service\Notificador\NotificadorEmail:
         arguments:
             $mailer: '@mailer' # Symfony Mailer es inyectado aquí
+            $fromEmail: '%env(EMAILER_FROM)%' # Se inyecta el valor de la variable de entorno EMAILER_FROM
+        public: true
 
+    # Registro de la interfaz y su implementación para NotificadorSMS
+    # App\Service\Notificador\NotificadorSMS:
+    #     public: true
+
+    # Registro de la interfaz y su implementación para NotificadorWhatsApp
+    # App\Service\Notificador\NotificadorWhatsApp:
+    #     public: true
+
+
+    # Registro de la interfaz y su implementación para el Subject
+    App\Service\Observador\SubjectInterface:
+        alias: App\Service\Observador\Subject
+        public: true
+
+    App\Service\Observador\Subject: ~

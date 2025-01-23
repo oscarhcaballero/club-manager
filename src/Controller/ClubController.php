@@ -13,10 +13,20 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Service\Observador\SubjectInterface;
+use App\Service\Notificador\NotificadorInterface;
 
 
 class ClubController extends AbstractController
 {
+    private $subject;
+
+    public function __construct(SubjectInterface $subject, NotificadorInterface $notificador)
+    {
+        $this->subject = $subject;
+        $this->subject->agregarObservador($notificador);
+    }
+
     #[Route('/api/club', methods: ['POST'])]
     public function createClub(Request $request, EntityManagerInterface $em): JsonResponse
     {
@@ -93,7 +103,6 @@ class ClubController extends AbstractController
     }
 
 
-
     #[Route('/api/club/{id}/jugador', methods: ['POST'])]
     public function addJugadorToClub(int $id, Request $request, EntityManagerInterface $em): JsonResponse
     {
@@ -158,13 +167,24 @@ class ClubController extends AbstractController
         $em->persist($jugador);
         $em->flush();
 
-        return new JsonResponse(['message' => '¡Jugador agregado al Club!'], 201);
+        // notificación
+        $mensaje = 'Jugador agregado al Club';
+        try {
+            $this->subject->notificar($mensaje, $jugador);
+            return new JsonResponse([
+                'message' => $mensaje. ', y notificación enviada.'
+            ], 200);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'message' => $mensaje. ', pero hubo un problema al enviar la notificación.',
+                'error' => $e->getMessage()
+            ], 201);
+        }
+
     }
 
 
 
-
-    
     #[Route('/api/club/{id}/entrenador', methods: ['POST'])]
     public function addEntrenadorToClub(int $id, Request $request, EntityManagerInterface $em): JsonResponse
     {
@@ -229,14 +249,32 @@ class ClubController extends AbstractController
         $em->persist($entrenador);
         $em->flush();
 
-        return new JsonResponse(['message' => '¡Entrenador agregado al Club!'], 201);
+
+        // notificación
+        $mensaje = 'Entrenador agregado al Club';
+        try {
+
+            $this->subject->notificar($mensaje, $entrenador);
+            return new JsonResponse([
+                'message' => $mensaje. ', y notificación enviada.'
+            ], 200);
+
+        } catch (\Exception $e) {
+
+            return new JsonResponse([
+                'message' => $mensaje. ', pero hubo un problema al enviar la notificación.',
+                'error' => $e->getMessage()
+            ], 201);
+
+        }
+
     }
 
 
 
 
     #[Route('/api/club/{clubId}/jugadores', methods: ['GET'])]
-    public function listJugadores(int $clubId, Request $request, EntityManagerInterface $em, JugadorRepository $jugadorRepository): JsonResponse {
+    public function listJugadoresFromClub(int $clubId, Request $request, EntityManagerInterface $em, JugadorRepository $jugadorRepository): JsonResponse {
         
         $club = $em->getRepository(Club::class)->find($clubId);
         if (!$club) {
