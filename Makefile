@@ -19,7 +19,7 @@ build-project: ## Construye las imágenes del Proyecto
 
 init-project: ## Inicializa el Proyecto
 	@echo "Inicializando el proyecto..."
-	$(DOCKER_COMPOSE) up -d 
+	$(DOCKER_COMPOSE) up -d --wait
 	$(DOCKER_COMPOSE) exec $(PHP_SERVICE) composer install
 	@echo "Proyecto inicializado."
 
