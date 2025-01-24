@@ -38,6 +38,11 @@ fixtures: ## Carga los fixtures en la base de datos
 	@echo "Carga datos de prueba en la base de datos..."
 	$(DOCKER_COMPOSE) exec $(PHP_SERVICE) php bin/console doctrine:fixtures:load --no-interaction
 
+test: ## Ejecuta los tests unitarios
+	@echo "Ejecutando tests..."
+	$(DOCKER_COMPOSE) exec $(PHP_SERVICE) php bin/phpunit
+	@echo "Tests ejecutados."	
+
 ssh: ## bash dentro del contenedor de la web
 	$(DOCKER_COMPOSE) exec -it ${PHP_SERVICE} bash
 

@@ -80,7 +80,7 @@ class JugadorController extends AbstractController
                 $this->subject->notificar($mensaje, $jugador);
                 return new JsonResponse([
                     'message' => $mensaje. ', y notificación enviada.'
-                ], 200);
+                ], 201);
             } catch (\InvalidArgumentException $e) {
                 return new JsonResponse([
                     'message' => $mensaje. ', pero hubo un problema al enviar la notificación.',
