@@ -29,7 +29,7 @@ class EntrenadorController extends AbstractController
     }
 
 
-    #[Route('/api/entrenador', methods: ['POST'])]
+    #[Route('/api/create-entrenador', methods: ['POST'])]
     public function createEntrenador(Request $request, EntityManagerInterface $em): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -54,7 +54,7 @@ class EntrenadorController extends AbstractController
 
 
 
-    #[Route('/api/entrenador/{id}/baja', methods: ['DELETE'])]
+    #[Route('/api/entrenador/{id}/delete', methods: ['DELETE'])]
     public function removeEntrenadorFromClub(int $id, EntityManagerInterface $em): JsonResponse
     {
         $entrenador = $em->getRepository(Entrenador::class)->find($id);

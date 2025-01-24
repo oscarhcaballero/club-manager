@@ -27,7 +27,7 @@ class ClubController extends AbstractController
         $this->subject->agregarObservador($notificador);
     }
 
-    #[Route('/api/club', methods: ['POST'])]
+    #[Route('/api/create-club', methods: ['POST'])]
     public function createClub(Request $request, EntityManagerInterface $em): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -62,7 +62,7 @@ class ClubController extends AbstractController
     }
 
 
-    #[Route('/api/club/{id}/budget', methods: ['PUT'])]
+    #[Route('/api/club/{id}/update-budget', methods: ['PUT'])]
     public function updateBudget(int $id, Request $request, EntityManagerInterface $em): JsonResponse
     {
         $club = $em->getRepository(Club::class)->find($id);
@@ -103,7 +103,7 @@ class ClubController extends AbstractController
     }
 
 
-    #[Route('/api/club/{id}/jugador', methods: ['POST'])]
+    #[Route('/api/club/{id}/add-jugador', methods: ['POST'])]
     public function addJugadorToClub(int $id, Request $request, EntityManagerInterface $em): JsonResponse
     {
         $club = $em->getRepository(Club::class)->find($id);
@@ -185,7 +185,7 @@ class ClubController extends AbstractController
 
 
 
-    #[Route('/api/club/{id}/entrenador', methods: ['POST'])]
+    #[Route('/api/club/{id}/add-entrenador', methods: ['POST'])]
     public function addEntrenadorToClub(int $id, Request $request, EntityManagerInterface $em): JsonResponse
     {
         $club = $em->getRepository(Club::class)->find($id);
@@ -305,6 +305,7 @@ class ClubController extends AbstractController
                 'id' => $jugador->getId(),
                 'nombre' => $jugador->getNombre(),
                 'salario' => $jugador->getSalario(),
+                'email' => $jugador->getEmail(),
             ];
         }
 

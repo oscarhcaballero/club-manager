@@ -31,7 +31,7 @@ class JugadorController extends AbstractController
     }
 
 
-    #[Route('/api/jugador', methods: ['POST'])]
+    #[Route('/api/create-jugador', methods: ['POST'])]
     public function createJugador(Request $request, EntityManagerInterface $em): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -56,7 +56,7 @@ class JugadorController extends AbstractController
 
 
     
-    #[Route('/api/jugador/{id}/baja', methods: ['DELETE'])]
+    #[Route('/api/jugador/{id}/delete', methods: ['DELETE'])]
     public function removeJugadorFromClub(int $id, EntityManagerInterface $em): JsonResponse
     {
         $jugador = $em->getRepository(Jugador::class)->find($id);

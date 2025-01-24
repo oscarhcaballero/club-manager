@@ -33,3 +33,10 @@ Sigue estos pasos para instalar y configurar el proyecto:
 Puedes acceder a phpMyAdmin en http://localhost:8080 para gestionar la base de datos MySQL. Utiliza las credenciales definidas en el archivo .env
 
 
+## Base de datos de Prueba ##
+La puedes encontrar en:  build/mysql/dbmanager.sql
+
+
+## Colección Postman 
+La puedes encontrar en el directorio build/postman
+Importa el archivo en Postman para tener disponible todos los endpoints de la Api
