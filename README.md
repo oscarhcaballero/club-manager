@@ -23,6 +23,9 @@ Sigue estos pasos para instalar y configurar el proyecto:
 
     make init-project
 
+**Crea las tablas de la base de datos:**
+
+    make migrate
 
 **Carga los datos de prueba:**
 
